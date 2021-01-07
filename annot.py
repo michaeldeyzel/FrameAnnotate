@@ -10,10 +10,13 @@ def display_frame(current_frame):
 	#print(f'trying frame {current_frame}')
 	if annot_sheet.iloc[int(current_frame)]['entering'] == 1:
 		cv2.putText( frame,  'ENTERING',  (70, 70),  font, 1,  (0, 255, 255),  4,  cv2.LINE_4 )
+		print('ENTERING here')
 	if annot_sheet.iloc[int(current_frame)]['ordering'] == 1:
 		cv2.putText( frame,  'ORDERING',  (270, 70),  font, 1,  (255, 0, 255),  4,  cv2.LINE_4 )
+		print('ORDERING here')
 	if annot_sheet.iloc[int(current_frame)]['collecting'] == 1:
 		cv2.putText( frame,  'COLLECTING',  (470, 70),  font, 1,  (255, 255, 0),  4,  cv2.LINE_4 )
+		print('COLLECTING here')
 
 	#gray = cv2.cvtColor(frame1, cv2.COLOR_BGR2RGB)
 	print(int(current_frame))
@@ -46,7 +49,7 @@ def seek_mode():
 	mode = 'seek'
 
 	print('Start seek mode in position ', int(cap.get(cv2.CAP_PROP_POS_FRAMES)))
-	while(mode == 'seek'):
+	while(cap.isOpened() and mode == 'seek'):
 		key = cv2.waitKey(0)
 		#print(current_frame)
 		if (key == ord('a')):
@@ -75,6 +78,12 @@ def seek_mode():
 		if key == ord('e'):
 			put_entering(current_frame)
 			current_frame = current_frame - 1
+			cap.set(cv2.CAP_PROP_POS_FRAMES, current_frame)
+			current_frame = display_frame(current_frame)
+
+		if key == ord('b'): # go 20 frames back
+			put_entering(current_frame)
+			current_frame = current_frame - 20
 			cap.set(cv2.CAP_PROP_POS_FRAMES, current_frame)
 			current_frame = display_frame(current_frame)
 
@@ -168,6 +177,8 @@ if __name__ == "__main__":
 	file = f'{sys.argv[1]}_annotated.csv'
 	try:
 		annot_sheet = pd.read_csv(file, index_col=0)
+		action_areas = annot_sheet.loc[(annot_sheet.loc[:, annot_sheet.dtypes != object] != 0).any(1)]
+		print(action_areas)
 
 	except FileNotFoundError: 
 		annot_sheet = pd.DataFrame(0, index=np.arange(frame_total), columns=actions)
@@ -176,15 +187,14 @@ if __name__ == "__main__":
 	print(f"The total frames in this file is {frame_total}")
 	current_frame = 0
 	mode = 'play' #start in play mode
-	while (mode != 'exit'):
+	while (mode != 'exit' and current_frame < frame_total-1):
 		if mode == 'play':
 			mode = play_mode()
 		elif mode == 'seek':
 			mode = seek_mode()
 		elif mode=='exit':
 			break
-	annot_sheet.to_csv(file, index=True)
-
+annot_sheet.to_csv(file, index=True)
 cap.release()
 cv2.destroyAllWindows()
 
