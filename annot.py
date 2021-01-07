@@ -82,7 +82,6 @@ def seek_mode():
 			current_frame = display_frame(current_frame)
 
 		if key == ord('b'): # go 20 frames back
-			put_entering(current_frame)
 			current_frame = current_frame - 20
 			cap.set(cv2.CAP_PROP_POS_FRAMES, current_frame)
 			current_frame = display_frame(current_frame)
