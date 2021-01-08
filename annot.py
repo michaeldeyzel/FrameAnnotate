@@ -44,12 +44,13 @@ def put_collecting(current_frame):
 
 def seek_mode():
 	global current_frame
+	global frame_total
 	#cap.set(cv2.CAP_PROP_POS_FRAMES, start_frame)
 	#current_frame = start_frame
 	mode = 'seek'
 
 	print('Start seek mode in position ', int(cap.get(cv2.CAP_PROP_POS_FRAMES)))
-	while(cap.isOpened() and mode == 'seek'):
+	while(cap.isOpened() and mode == 'seek' and current_frame < frame_total-1):
 		key = cv2.waitKey(0)
 		#print(current_frame)
 		if (key == ord('a')):
@@ -58,7 +59,7 @@ def seek_mode():
 					print(f'current frame is not 0 it is {current_frame}')
 					current_frame = current_frame - 2
 					print(f'Ive changed it to {current_frame}')
-					cap.set(cv2.CAP_PROP_POS_FRAMES, current_frame)
+					cap.set(cv2.CV_PROP_POS_FRAMES, current_frame)
 					print(f'Ive set it to {current_frame}')
 					current_frame = display_frame(current_frame)
 					print(f'After display it is {current_frame}')
@@ -95,7 +96,7 @@ def seek_mode():
 		if key == ord('c'):
 			put_collecting(current_frame)
 			current_frame = current_frame - 1
-			cap.set(cv2.CAP_PROP_POS_FRAMES, current_frame)
+			cap.set(cv2.CV_PROP_POS_FRAMES, current_frame)
 			current_frame = display_frame(current_frame)
 
 		if key == ord('r'):
@@ -108,8 +109,10 @@ def seek_mode():
 			print(f'Jump to any frame < {int(cap.get(cv2.CAP_PROP_FRAME_COUNT))}:')
 			fr = input('Enter frame:')
 			print(f'Jumping to frame {fr}')
-
+			print('setting...')
 			cap.set(cv2.CAP_PROP_POS_FRAMES, int(fr)-1)
+			print('displaying...')
+			
 			current_frame = display_frame(current_frame-1)
 
 		if (key == ord('s')):
@@ -119,11 +122,12 @@ def seek_mode():
 
 def play_mode():
 	global current_frame
+	global frame_total
 
 	#cap.set(cv2.CAP_PROP_POS_FRAMES, start_frame)
 	#current_frame = start_frame
 	mode = 'play'
-	while(cap.isOpened() and mode == 'play'):
+	while(cap.isOpened() and mode == 'play' and current_frame < frame_total-1):
 
 		# next_frame = cap.get(cv2.CAP_PROP_POS_FRAMES)
 		# current_frame = next_frame - 1
@@ -160,7 +164,9 @@ def play_mode():
 			print(f'Jump to any frame < {int(cap.get(cv2.CAP_PROP_FRAME_COUNT))}:')
 			fr = input()
 			print(f'Jumping to frame {fr}')
+			print('setting...')
 			cap.set(cv2.CAP_PROP_POS_FRAMES, current_frame-1)
+			print('displaying...')
 			current_frame = display_frame(current_frame-1)
 
 			
