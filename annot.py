@@ -126,7 +126,12 @@ def play_mode():
 
 	#cap.set(cv2.CAP_PROP_POS_FRAMES, start_frame)
 	#current_frame = start_frame
-	mode = 'play'
+	
+	if current_frame < frame_total-1:
+		mode = 'play'
+	else:
+		mode = 'exit'
+
 	while(cap.isOpened() and mode == 'play' and current_frame < frame_total-1):
 
 		# next_frame = cap.get(cv2.CAP_PROP_POS_FRAMES)
