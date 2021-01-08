@@ -47,7 +47,13 @@ def seek_mode():
 	global frame_total
 	#cap.set(cv2.CAP_PROP_POS_FRAMES, start_frame)
 	#current_frame = start_frame
-	mode = 'seek'
+
+	if current_frame < frame_total-1:
+		mode = 'seek'
+	else:
+		mode = 'exit'
+	
+
 
 	print('Start seek mode in position ', int(cap.get(cv2.CAP_PROP_POS_FRAMES)))
 	while(cap.isOpened() and mode == 'seek' and current_frame < frame_total-1):
@@ -126,7 +132,7 @@ def play_mode():
 
 	#cap.set(cv2.CAP_PROP_POS_FRAMES, start_frame)
 	#current_frame = start_frame
-	
+
 	if current_frame < frame_total-1:
 		mode = 'play'
 	else:
@@ -174,7 +180,6 @@ def play_mode():
 			print('displaying...')
 			current_frame = display_frame(current_frame-1)
 
-			
 	return mode
 
 
