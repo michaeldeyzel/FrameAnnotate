@@ -1,7 +1,10 @@
+### Author Michael Deyzel
+### Repo: https://github.com/michaeldeyzel/FrameAnnotate
 import numpy as np
 import cv2
 import pandas as pd
 import sys
+import imutils
 
 
 def display_frame(current_frame):
@@ -10,20 +13,19 @@ def display_frame(current_frame):
 	#print(f'trying frame {current_frame}')
 	if annot_sheet.iloc[int(current_frame)]['entering'] == 1:
 		cv2.putText( frame,  'ENTERING',  (70, 70),  font, 1,  (0, 255, 255),  4,  cv2.LINE_4 )
-		print('ENTERING here')
 	if annot_sheet.iloc[int(current_frame)]['ordering'] == 1:
 		cv2.putText( frame,  'ORDERING',  (270, 70),  font, 1,  (255, 0, 255),  4,  cv2.LINE_4 )
-		print('ORDERING here')
 	if annot_sheet.iloc[int(current_frame)]['collecting'] == 1:
 		cv2.putText( frame,  'COLLECTING',  (470, 70),  font, 1,  (255, 255, 0),  4,  cv2.LINE_4 )
-		print('COLLECTING here')
 
 	#gray = cv2.cvtColor(frame1, cv2.COLOR_BGR2RGB)
-	print(int(current_frame))
+	#print(int(current_frame))
 	cv2.putText( frame,  str(int(current_frame)),  (1632-70, 70),  font, 1,  (0, 255, 255),  2,  cv2.LINE_4 )
-	frame1 = cv2.resize(frame, (int(1632/2), int(1232/2))) #half vid size
-	cv2.imshow(f'Frame annotation',frame1)
+	frame = imutils.resize(frame, width=500)
+	#frame1 = cv2.resize(frame, (int(1632/2), int(1232/2))) #half vid size
+	cv2.imshow(f'Frame annotation',frame)
 	return current_frame
+
 
 def put_entering(current_frame):
 	print(f"Adding ENTERING on frame {current_frame}")
@@ -39,6 +41,13 @@ def put_collecting(current_frame):
 	print(f"Adding COLLECTING on frame {current_frame}")
 	annot_sheet.at[int(current_frame), 'collecting'] = 1
 
+def put_order_loc(current_frame, loc_x, loc_y):
+	annot_sheet.at[int(current_frame),'order_loc_x'] = loc_x
+	annot_sheet.at[int(current_frame),'order_loc_y'] = loc_y
+
+def put_collect_loc(current_frame, loc_x, loc_y):
+	annot_sheet.at[int(current_frame),'collect_loc_x'] = loc_x
+	annot_sheet.at[int(current_frame),'collect_loc_y'] = loc_y
 
 
 
@@ -47,16 +56,10 @@ def seek_mode():
 	global frame_total
 	#cap.set(cv2.CAP_PROP_POS_FRAMES, start_frame)
 	#current_frame = start_frame
-
-	if current_frame < frame_total-1:
-		mode = 'seek'
-	else:
-		mode = 'exit'
-	
-
+	mode = 'seek'
 
 	print('Start seek mode in position ', int(cap.get(cv2.CAP_PROP_POS_FRAMES)))
-	while(cap.isOpened() and mode == 'seek' and current_frame < frame_total-1):
+	while(cap.isOpened and mode == 'seek' and current_frame < frame_total -1):
 		key = cv2.waitKey(0)
 		#print(current_frame)
 		if (key == ord('a')):
@@ -65,7 +68,7 @@ def seek_mode():
 					print(f'current frame is not 0 it is {current_frame}')
 					current_frame = current_frame - 2
 					print(f'Ive changed it to {current_frame}')
-					cap.set(cv2.CV_PROP_POS_FRAMES, current_frame)
+					cap.set(cv2.CAP_PROP_POS_FRAMES, current_frame)
 					print(f'Ive set it to {current_frame}')
 					current_frame = display_frame(current_frame)
 					print(f'After display it is {current_frame}')
@@ -88,11 +91,6 @@ def seek_mode():
 			cap.set(cv2.CAP_PROP_POS_FRAMES, current_frame)
 			current_frame = display_frame(current_frame)
 
-		if key == ord('b'): # go 20 frames back
-			current_frame = current_frame - 20
-			cap.set(cv2.CAP_PROP_POS_FRAMES, current_frame)
-			current_frame = display_frame(current_frame)
-
 		if key == ord('o'):
 			put_ordering(current_frame)
 			current_frame = current_frame - 1
@@ -102,7 +100,7 @@ def seek_mode():
 		if key == ord('c'):
 			put_collecting(current_frame)
 			current_frame = current_frame - 1
-			cap.set(cv2.CV_PROP_POS_FRAMES, current_frame)
+			cap.set(cv2.CAP_PROP_POS_FRAMES, current_frame)
 			current_frame = display_frame(current_frame)
 
 		if key == ord('r'):
@@ -115,10 +113,8 @@ def seek_mode():
 			print(f'Jump to any frame < {int(cap.get(cv2.CAP_PROP_FRAME_COUNT))}:')
 			fr = input('Enter frame:')
 			print(f'Jumping to frame {fr}')
-			print('setting...')
+
 			cap.set(cv2.CAP_PROP_POS_FRAMES, int(fr)-1)
-			print('displaying...')
-			
 			current_frame = display_frame(current_frame-1)
 
 		if (key == ord('s')):
@@ -132,13 +128,11 @@ def play_mode():
 
 	#cap.set(cv2.CAP_PROP_POS_FRAMES, start_frame)
 	#current_frame = start_frame
-
-	if current_frame < frame_total-1:
-		mode = 'play'
-	else:
+	mode = 'play'
+	if not current_frame < frame_total -1:
 		mode = 'exit'
 
-	while(cap.isOpened() and mode == 'play' and current_frame < frame_total-1):
+	while(cap.isOpened() and mode == 'play' and current_frame < frame_total - 1):
 
 		# next_frame = cap.get(cv2.CAP_PROP_POS_FRAMES)
 		# current_frame = next_frame - 1
@@ -175,12 +169,18 @@ def play_mode():
 			print(f'Jump to any frame < {int(cap.get(cv2.CAP_PROP_FRAME_COUNT))}:')
 			fr = input()
 			print(f'Jumping to frame {fr}')
-			print('setting...')
 			cap.set(cv2.CAP_PROP_POS_FRAMES, current_frame-1)
-			print('displaying...')
 			current_frame = display_frame(current_frame-1)
 
 	return mode
+
+def click_handler(event, x, y, flags, param):
+	if event == cv2.EVENT_LBUTTONDOWN:
+		print("Order at {}".format((x,y)))
+		put_order_loc(current_frame, x,y)
+	if event == cv2.EVENT_RBUTTONDOWN:
+		print("Pickup at {}".format((x,y)))
+		put_collect_loc(current_frame, x,y)
 
 
 if __name__ == "__main__":
@@ -188,46 +188,30 @@ if __name__ == "__main__":
 	font = cv2.FONT_HERSHEY_SIMPLEX
 	cap = cv2.VideoCapture(sys.argv[1])
 	frame_total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-	actions = ['entering', 'ordering', 'collecting']
+	actions = ['entering', 'ordering', 'collecting', 'order_loc_x','order_loc_y','collect_loc_x','collect_loc_y']
 	file = f'{sys.argv[1]}_annotated.csv'
 	try:
 		annot_sheet = pd.read_csv(file, index_col=0)
-		action_areas = annot_sheet.loc[(annot_sheet.loc[:, annot_sheet.dtypes != object] != 0).any(1)]
-		print(action_areas)
 
 	except FileNotFoundError: 
-		annot_sheet = pd.DataFrame(0, index=np.arange(frame_total), columns=actions)
+		annot_sheet = pd.DataFrame(0, index=np.arange(frame_total+1), columns=actions)
 
 	
 	print(f"The total frames in this file is {frame_total}")
 	current_frame = 0
 	mode = 'play' #start in play mode
-	while (mode != 'exit' and current_frame < frame_total-1):
+
+	cv2.namedWindow('Frame annotation')
+	cv2.setMouseCallback('Frame annotation', click_handler)
+
+	while (mode != 'exit'):
 		if mode == 'play':
 			mode = play_mode()
 		elif mode == 'seek':
 			mode = seek_mode()
 		elif mode=='exit':
 			break
+
 annot_sheet.to_csv(file, index=True)
 cap.release()
 cv2.destroyAllWindows()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
