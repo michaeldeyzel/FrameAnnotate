@@ -5,6 +5,7 @@ import cv2
 import pandas as pd
 import sys
 import imutils
+import clipboard
 
 
 def display_frame(current_frame):
@@ -178,9 +179,12 @@ def click_handler(event, x, y, flags, param):
 	if event == cv2.EVENT_LBUTTONDOWN:
 		print("Order at {}".format((x,y)))
 		put_order_loc(current_frame, x,y)
+		clipboard.copy(f"{(x,y)}")  # for easy spreadsheetifying
+		
 	if event == cv2.EVENT_RBUTTONDOWN:
 		print("Pickup at {}".format((x,y)))
 		put_collect_loc(current_frame, x,y)
+		clipboard.copy(f"{(x,y)}")
 
 
 if __name__ == "__main__":
