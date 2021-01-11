@@ -104,7 +104,7 @@ def seek_mode():
 			current_frame = display_frame(current_frame)
 
 		if key == ord('r'):
-			annot_sheet.at[int(current_frame)] = 0,0,0
+			annot_sheet.at[int(current_frame)] = 0,0,0,0,0
 			current_frame = current_frame - 1
 			cap.set(cv2.CAP_PROP_POS_FRAMES, current_frame)
 			current_frame = display_frame(current_frame)
@@ -164,7 +164,7 @@ def play_mode():
 		if key == ord('c'):
 			put_collecting(current_frame)
 		if key == ord('r'):
-			annot_sheet.at[int(current_frame)] = 0,0,0
+			annot_sheet.at[int(current_frame)] = 0,0,0,0,0
 		if key == ord('j'):
 			print(f'Jump to any frame < {int(cap.get(cv2.CAP_PROP_FRAME_COUNT))}:')
 			fr = input()
