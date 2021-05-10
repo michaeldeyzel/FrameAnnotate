@@ -2,7 +2,7 @@
 # How to use
 
 1. Place annot.py in same folder as video  
-1. run `python annot.py <filename>` where \<filename\>
+1. run `python annot.py my_video.mp4`
 
 It will start in play mode. The csv file will be saved in the same directory.  
 A new CSV file will be created if one is not in the same directory yet.
